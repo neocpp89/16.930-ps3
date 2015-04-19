@@ -14,24 +14,52 @@ function r = myrinvexpl(master,mesh,app,u,time)
 %                    matrix)                             
 r = zeros(size(u));
 
+xxi = squeeze(master.shap(:,2,:))'*squeeze(mesh.dgnodes(:,1,:));
+xet = squeeze(master.shap(:,3,:))'*squeeze(mesh.dgnodes(:,1,:));
+yxi = squeeze(master.shap(:,2,:))'*squeeze(mesh.dgnodes(:,2,:));
+yet = squeeze(master.shap(:,3,:))'*squeeze(mesh.dgnodes(:,2,:));
+
+for i=1:size(mesh.dgnodes, 1)
+    for t=1:size(mesh.dgnodes, 3)
+        J = [xxi(i,t), xet(i,t); yxi(i,t), yet(i,t)];
+        jacobian(:,:,i,t) = J;
+        detJ(i,t) = det(J);
+    end
+end
+
+phi1d(:,:) = master.sh1d(:,1,:);
+dphi1d(:,:) = master.sh1d(:,2,:);
+phi(:,:) = master.shap(:,1,:);
+dphidxi(:,:) = master.shap(:,2,:);
+dphideta(:,:) = master.shap(:,3,:);
+
 npl = size(mesh.plocal, 1);
 nc = app.nc;
+
+% loop through all faces
+nf = size(mesh.f, 1);
+for i=1:nf
+end
+
+% loop through internal faces
+ni = sum(mesh.f(:,4) > 0);
+for i=1:ni
+end
 
 % loop through elements
 nt = size(mesh.t, 1);
 for i=1:nt
     p(:,:) = mesh.dgnodes(:,:,i);
-    uv = u(:,:,i);
-    r(:,:,i) = r(:,:,i) + app.finvv(uv, p, app.arg, time);
+    uv(:,:) = u(:,:,i);
+    pg = phi'*p;
+    ug = phi'*uv;
+    finvv = app.finvv(ug, pg, app.arg, time);
+    dphidx = dphidxi*pg
+    dphidy = dphideta*pg
+    size(finvv)
+    size(jcw(:,i))
+    r(:,:,i) = r(:,:,i) + jcw(:, i).*finvv;
 end
-
-% loop through faces
-nf = size(mesh.f, 1);
-for i=1:nf
-end
-
-ni = sum(mesh.f(:,4) > 0);
-% loop through internal faces
 
 
 % divide by mass matrix

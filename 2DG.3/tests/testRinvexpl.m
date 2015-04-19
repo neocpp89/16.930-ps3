@@ -33,6 +33,7 @@ classdef testRinvexpl < matlab.unittest.TestCase
 
             tm = 0;
             r_expected = rinvexpl(master,mesh,app,u,tm);
+            disp('-----');
             r_actual = myrinvexpl(master,mesh,app,u,tm);
             testCase.verifyEqual(r_actual, r_expected, 'Abstol', 1e-10);
         end
