@@ -52,14 +52,26 @@ end
 % loop through internal faces
 ni = sum(mesh.f(:,4) > 0);
 for i=1:ni
-    epl = mesh.f(i,1) % left point index 
-    epr = mesh.f(i,2)
-    kl = mesh.f(i,3) % left element index
-    kr = mesh.f(i,4)
-    eli = find(abs(mesh.t2f(kl,:)) == i) % left element edge index
-    eri = find(abs(mesh.t2f(kr,:)) == i)
-    elo = 1 + (mesh.t2f(kl,eli) < 0) % orientation of edge on left element
-    ero = 1 + (mesh.t2f(kr,eri) < 0)
+    epl = mesh.f(i,1); % left point index 
+    epr = mesh.f(i,2);
+    kl = mesh.f(i,3); % left element index
+    kr = mesh.f(i,4);
+    eli = find(abs(mesh.t2f(kl,:)) == i); % left element edge index
+    eri = find(abs(mesh.t2f(kr,:)) == i);
+    elo = 1 + (mesh.t2f(kl,eli) < 0); % orientation of edge on left element
+    ero = 1 + (mesh.t2f(kr,eri) < 0);
+
+    ep = mesh.dgnodes(master.perm(:, eli, elo), :, kl);
+    epg = phi1d'*ep; % location of gauss points on edge
+
+    % exxi = squeeze(master.shap(master.perm(:, eli, elo), 2, kl))'*squeeze(mesh.dgnodes(master.perm(:, eli, elo),1,kl))
+    % eyxi = squeeze(master.shap(master.perm(:, eli, elo), 2, kl))'*squeeze(mesh.dgnodes(master.perm(:, eli, elo),2,kl))
+
+    ul = u(master.perm(:, eli, elo), :, kl); % solution on left element's edge
+    ulg = phi1d'*ul; % and at gauss points on edge
+    ur = u(master.perm(:, eri, ero), :, kr);
+    urg = phi1d'*ur;
+    % finvi = app.finvi( urg, ulg, nepg, epg, app.arg, time)
 end
 
 % loop through elements
@@ -73,19 +85,22 @@ for i=1:nt
     etax = diag(-yxi(:,i) ./ detJ(:,i));
     xiy = diag(-xet(:,i) ./ detJ(:,i));
     etay = diag(xxi(:,i) ./ detJ(:,i));
-    scale = diag(master.gwgh .* detJ(:,i));
+    scale = (master.gwgh .* detJ(:,i));
     dphidx = (dphidxi*xix + dphideta*etax);
     dphidy = (dphidxi*xiy + dphideta*etay);
 
-    finvv = app.finvv(ug, pg, app.arg, time);
-    r(:,:,i) = r(:,:,i) + finvv;
+    mm = phi*diag(master.gwgh ./ detJ(:, i))*phi'
+
+    [fvx, fvy] = app.finvv(ug, pg, app.arg, time);
+    finvv = dphidx * (fvx .* scale) + dphidy * (fvy .* scale);
+    r(:,:,i) = r(:,:,i) + (mm \ finvv);
 end
 
 
 % divide by mass matrix
-for k=1:size(mesh.t,1)
-    for j=1:app.nc
-        r(:,j,k) = master.mass \ r(:,j,k);
-    end
-end
+% for k=1:size(mesh.t,1)
+%    for j=1:app.nc
+%        r(:,j,k) = master.mass \ r(:,j,k);
+%    end
+% end
 end
