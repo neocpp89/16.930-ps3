@@ -19,11 +19,12 @@ xet = squeeze(master.shap(:,3,:))'*squeeze(mesh.dgnodes(:,1,:));
 yxi = squeeze(master.shap(:,2,:))'*squeeze(mesh.dgnodes(:,2,:));
 yet = squeeze(master.shap(:,3,:))'*squeeze(mesh.dgnodes(:,2,:));
 
-for i=1:size(mesh.dgnodes, 1)
+for i=1:size(xxi, 1)
     for t=1:size(mesh.dgnodes, 3)
         J = [xxi(i,t), xet(i,t); yxi(i,t), yet(i,t)];
         jacobian(:,:,i,t) = J;
-        detJ(i,t) = det(J);
+        detJ = 1.0 ./ (xxi.*yet - xet.*yxi);
+        jacobian_inverse(:,:,i,t) = J^(-1);
     end
 end
 
@@ -33,17 +34,32 @@ phi(:,:) = master.shap(:,1,:);
 dphidxi(:,:) = master.shap(:,2,:);
 dphideta(:,:) = master.shap(:,3,:);
 
+dsdxi = sqrt(yxi.^2 + xxi.^2);
+
 npl = size(mesh.plocal, 1);
 nc = app.nc;
 
-% loop through all faces
-nf = size(mesh.f, 1);
-for i=1:nf
+% loop through faces of elements
+nt = size(mesh.t, 1);
+for it=1:nt
+    for ie=1:size(mesh.t2f, 2)
+        orientation = 1+(mesh.t2f(it, ie) < 0);
+        ep = squeeze(mesh.dgnodes(master.perm(:,ie,orientation)));
+        epg = phi1d'*ep; 
+    end
 end
 
 % loop through internal faces
 ni = sum(mesh.f(:,4) > 0);
 for i=1:ni
+    epl = mesh.f(i,1) % left point index 
+    epr = mesh.f(i,2)
+    kl = mesh.f(i,3) % left element index
+    kr = mesh.f(i,4)
+    eli = find(abs(mesh.t2f(kl,:)) == i) % left element edge index
+    eri = find(abs(mesh.t2f(kr,:)) == i)
+    elo = 1 + (mesh.t2f(kl,eli) < 0) % orientation of edge on left element
+    ero = 1 + (mesh.t2f(kr,eri) < 0)
 end
 
 % loop through elements
@@ -53,12 +69,16 @@ for i=1:nt
     uv(:,:) = u(:,:,i);
     pg = phi'*p;
     ug = phi'*uv;
+    xix = diag(yet(:,i) ./ detJ(:,i));
+    etax = diag(-yxi(:,i) ./ detJ(:,i));
+    xiy = diag(-xet(:,i) ./ detJ(:,i));
+    etay = diag(xxi(:,i) ./ detJ(:,i));
+    scale = diag(master.gwgh .* detJ(:,i));
+    dphidx = (dphidxi*xix + dphideta*etax);
+    dphidy = (dphidxi*xiy + dphideta*etay);
+
     finvv = app.finvv(ug, pg, app.arg, time);
-    dphidx = dphidxi*pg
-    dphidy = dphideta*pg
-    size(finvv)
-    size(jcw(:,i))
-    r(:,:,i) = r(:,:,i) + jcw(:, i).*finvv;
+    r(:,:,i) = r(:,:,i) + finvv;
 end
 
 
