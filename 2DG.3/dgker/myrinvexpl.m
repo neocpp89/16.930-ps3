@@ -24,7 +24,7 @@ for i=1:size(xxi, 1)
         J = [xxi(i,t), xet(i,t); yxi(i,t), yet(i,t)];
         jacobian(:,:,i,t) = J;
         detJ = (xxi.*yet - xet.*yxi);
-        % I will just compute components as needed later
+        % I will just compute components as needed later...
         % jacobian_inverse(:,:,i,t) = J^(-1);
     end
 end
@@ -63,14 +63,21 @@ for i=1:ni
     ep = mesh.dgnodes(master.perm(:, eli, elo), :, kl);
     epg = phi1d'*ep; % location of gauss points on edge
 
-    % exxi = squeeze(master.shap(master.perm(:, eli, elo), 2, kl))'*squeeze(mesh.dgnodes(master.perm(:, eli, elo),1,kl))
-    % eyxi = squeeze(master.shap(master.perm(:, eli, elo), 2, kl))'*squeeze(mesh.dgnodes(master.perm(:, eli, elo),2,kl))
+    % tangent vector
+    xsg = dphi1d'*ep(:,1);
+    ysg = dphi1d'*ep(:,2);
+
+    % outward normal
+    nepg = normr([ysg, -xsg]);
 
     ul = u(master.perm(:, eli, elo), :, kl); % solution on left element's edge
     ulg = phi1d'*ul; % and at gauss points on edge
     ur = u(master.perm(:, eri, ero), :, kr);
     urg = phi1d'*ur;
-    % finvi = app.finvi( urg, ulg, nepg, epg, app.arg, time)
+
+    finvi = app.finvi( urg, ulg, nepg, epg, app.arg, time)
+    scale = (master.gw1d .* sqrt(xsg.*xsg + ysg.*ysg));
+    r(master.perm(:, eli, elo), :, kl) = r(master.perm(:, eli, elo), :, kl) - (phi1d * (finvi .* scale));
 end
 
 % loop through elements
@@ -87,15 +94,26 @@ for i=1:nt
     xiy = diag(-xet(:,i) ./ detJ(:,i));
     etay = diag(xxi(:,i) ./ detJ(:,i));
     scale = (master.gwgh .* detJ(:,i));
+
+    % derivatives with respect to global coordinates
     dphidx = (dphidxi*xix + dphideta*etax);
     dphidy = (dphidxi*xiy + dphideta*etay);
 
     % mass matrix if non-constant jacobians
-    mm = phi*diag(master.gwgh .* detJ(:, i))*phi';
+    % mm = phi*diag(master.gwgh .* detJ(:, i))*phi';
 
     [fvx, fvy] = app.finvv(ug, pg, app.arg, time);
     finvv = dphidx * (fvx .* scale) + dphidy * (fvy .* scale);
-    r(:,:,i) = r(:,:,i) + (mm \ finvv);
+    r(:,:,i) = r(:,:,i) + finvv;
+    % r(:,:,i) = r(:,:,i) + (mm \ finvv);
+end
+
+% divide by mass matrix
+nt = size(mesh.t, 1);
+for i=1:nt
+    % mass matrix if non-constant jacobians
+    mm = phi*diag(master.gwgh .* detJ(:, i))*phi';
+    r(:,:,i) = (mm \ r(:,:,i));
 end
 
 end
