@@ -75,9 +75,11 @@ for i=1:ni
     ur = u(master.perm(:, eri, ero), :, kr);
     urg = phi1d'*ur;
 
-    finvi = app.finvi( urg, ulg, nepg, epg, app.arg, time)
+    lfinvi = app.finvi( urg, ulg, nepg, epg, app.arg, time)
+    rfinvi = app.finvi( ulg, urg, -nepg, epg, app.arg, time)
     scale = (master.gw1d .* sqrt(xsg.*xsg + ysg.*ysg));
-    r(master.perm(:, eli, elo), :, kl) = r(master.perm(:, eli, elo), :, kl) - (phi1d * (finvi .* scale));
+    r(master.perm(:, eli, elo), :, kl) = r(master.perm(:, eli, elo), :, kl) - (phi1d * (lfinvi .* scale));
+    r(master.perm(:, eri, ero), :, kr) = r(master.perm(:, eri, ero), :, kr) - (phi1d * (rfinvi .* scale));
 end
 
 % loop through elements
