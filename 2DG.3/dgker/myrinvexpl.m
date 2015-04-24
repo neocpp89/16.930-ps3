@@ -23,8 +23,9 @@ for i=1:size(xxi, 1)
     for t=1:size(mesh.dgnodes, 3)
         J = [xxi(i,t), xet(i,t); yxi(i,t), yet(i,t)];
         jacobian(:,:,i,t) = J;
-        detJ = 1.0 ./ (xxi.*yet - xet.*yxi);
-        jacobian_inverse(:,:,i,t) = J^(-1);
+        detJ = (xxi.*yet - xet.*yxi);
+        % I will just compute components as needed later
+        % jacobian_inverse(:,:,i,t) = J^(-1);
     end
 end
 
@@ -33,8 +34,6 @@ dphi1d(:,:) = master.sh1d(:,2,:);
 phi(:,:) = master.shap(:,1,:);
 dphidxi(:,:) = master.shap(:,2,:);
 dphideta(:,:) = master.shap(:,3,:);
-
-dsdxi = sqrt(yxi.^2 + xxi.^2);
 
 npl = size(mesh.plocal, 1);
 nc = app.nc;
@@ -81,6 +80,8 @@ for i=1:nt
     uv(:,:) = u(:,:,i);
     pg = phi'*p;
     ug = phi'*uv;
+
+    % components of inverse jacobian
     xix = diag(yet(:,i) ./ detJ(:,i));
     etax = diag(-yxi(:,i) ./ detJ(:,i));
     xiy = diag(-xet(:,i) ./ detJ(:,i));
@@ -89,18 +90,12 @@ for i=1:nt
     dphidx = (dphidxi*xix + dphideta*etax);
     dphidy = (dphidxi*xiy + dphideta*etay);
 
-    mm = phi*diag(master.gwgh ./ detJ(:, i))*phi'
+    % mass matrix if non-constant jacobians
+    mm = phi*diag(master.gwgh .* detJ(:, i))*phi';
 
     [fvx, fvy] = app.finvv(ug, pg, app.arg, time);
     finvv = dphidx * (fvx .* scale) + dphidy * (fvy .* scale);
     r(:,:,i) = r(:,:,i) + (mm \ finvv);
 end
 
-
-% divide by mass matrix
-% for k=1:size(mesh.t,1)
-%    for j=1:app.nc
-%        r(:,j,k) = master.mass \ r(:,j,k);
-%    end
-% end
 end
