@@ -38,27 +38,13 @@ dphideta(:,:) = master.shap(:,3,:);
 npl = size(mesh.plocal, 1);
 nc = app.nc;
 
-% loop through faces of elements
-nt = size(mesh.t, 1);
-for it=1:nt
-    for ie=1:size(mesh.t2f, 2)
-        orientation = 1+(mesh.t2f(it, ie) < 0);
-        ep = squeeze(mesh.dgnodes(master.perm(:,ie,orientation)));
-        epg = phi1d'*ep; 
-    end
-end
-
-% loop through internal faces
-ni = sum(mesh.f(:,4) > 0);
-for i=1:ni
+% loop through all faces
+nf = size(mesh.f, 1);
+for i=1:nf
     epl = mesh.f(i,1); % left point index 
-    epr = mesh.f(i,2);
     kl = mesh.f(i,3); % left element index
-    kr = mesh.f(i,4);
     eli = find(abs(mesh.t2f(kl,:)) == i); % left element edge index
-    eri = find(abs(mesh.t2f(kr,:)) == i);
     elo = 1 + (mesh.t2f(kl,eli) < 0); % orientation of edge on left element
-    ero = 1 + (mesh.t2f(kr,eri) < 0);
 
     ep = mesh.dgnodes(master.perm(:, eli, elo), :, kl);
     epg = phi1d'*ep; % location of gauss points on edge
@@ -72,15 +58,31 @@ for i=1:ni
 
     ul = u(master.perm(:, eli, elo), :, kl); % solution on left element's edge
     ulg = phi1d'*ul; % and at gauss points on edge
-    ur = u(master.perm(:, eri, ero), :, kr);
-    urg = phi1d'*ur;
 
-    lfinvi = app.finvi( urg, ulg, nepg, epg, app.arg, time)
-    rfinvi = app.finvi( ulg, urg, -nepg, epg, app.arg, time)
     scale = (master.gw1d .* sqrt(xsg.*xsg + ysg.*ysg));
-    r(master.perm(:, eli, elo), :, kl) = r(master.perm(:, eli, elo), :, kl) - (phi1d * (lfinvi .* scale));
-    r(master.perm(:, eri, ero), :, kr) = r(master.perm(:, eri, ero), :, kr) - (phi1d * (rfinvi .* scale));
+
+    kr = mesh.f(i,4); % right element (tells if internal face or boundary)
+    if (kr >= 0)
+        % internal face, get right element quantities
+        epr = mesh.f(i,2);
+        eri = find(abs(mesh.t2f(kr,:)) == i);
+        ero = 1 + (mesh.t2f(kr,eri) < 0);
+        ur = u(master.perm(:, eri, ero), :, kr);
+        urg = phi1d'*ur;
+
+        lfinvi = app.finvi( urg, ulg, nepg, epg, app.arg, time);
+        rfinvi = app.finvi( ulg, urg, -nepg, epg, app.arg, time);
+
+        r(master.perm(:, eli, elo), :, kl) = r(master.perm(:, eli, elo), :, kl) - (phi1d * (lfinvi .* scale));
+        r(master.perm(:, eri, ero), :, kr) = r(master.perm(:, eri, ero), :, kr) - (phi1d * (rfinvi .* scale));
+    else
+        % external face
+        ibt = app.bcm(-kr);
+        finvb = app.finvb( ulg, nepg, ibt, app.bcs(ibt, :), epg, app.arg, time);
+        r(master.perm(:, eli, elo), :, kl) = r(master.perm(:, eli, elo), :, kl) - (phi1d * (finvb .* scale));
+    end
 end
+
 
 % loop through elements
 nt = size(mesh.t, 1);

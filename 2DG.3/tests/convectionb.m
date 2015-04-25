@@ -13,7 +13,13 @@ function fn = convectionb(up,np,ib,ui,p,param,time)
 %      FN(np):     np normal fluxes (f plus)  
 %                          
 % - Written by: J. Peraire
-% 
+%
+%up
+%np
+%ib
+%ui
+%p
+
 um = repmat(ui,size(up,1),1);
 fn = convectioni(up,um,np,p,param,time);
 

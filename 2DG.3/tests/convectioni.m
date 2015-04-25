@@ -16,10 +16,10 @@ function fn = convectioni(up,um,np,p,param,time)
 % - Written by: J. Peraire
 %
 
-up
-um
-np
-p
+%up
+%um
+%np
+%p
 
 if isa(param{1},'double')
     vel = param{1};
@@ -31,3 +31,4 @@ end
 
 avn = abs(vn);
 fn = 0.5*vn.*(up+um)+0.5*avn.*(up-um);
+%fn

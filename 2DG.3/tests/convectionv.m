@@ -14,8 +14,8 @@ function [fx,fy] = convectionv(u,p,param,time)
 %                          
 % - Written by: J. Peraire
 %
-u
-p
+%u
+%p
 
 if isa(param{1},'double')
     vel = param{1};
