@@ -18,16 +18,7 @@ xxi = squeeze(master.shap(:,2,:))'*squeeze(mesh.dgnodes(:,1,:));
 xet = squeeze(master.shap(:,3,:))'*squeeze(mesh.dgnodes(:,1,:));
 yxi = squeeze(master.shap(:,2,:))'*squeeze(mesh.dgnodes(:,2,:));
 yet = squeeze(master.shap(:,3,:))'*squeeze(mesh.dgnodes(:,2,:));
-
-for i=1:size(xxi, 1)
-    for t=1:size(mesh.dgnodes, 3)
-        J = [xxi(i,t), xet(i,t); yxi(i,t), yet(i,t)];
-        jacobian(:,:,i,t) = J;
-        detJ = (xxi.*yet - xet.*yxi);
-        % I will just compute components as needed later...
-        % jacobian_inverse(:,:,i,t) = J^(-1);
-    end
-end
+detJ = (xxi.*yet - xet.*yxi);
 
 phi1d(:,:) = master.sh1d(:,1,:);
 dphi1d(:,:) = master.sh1d(:,2,:);
