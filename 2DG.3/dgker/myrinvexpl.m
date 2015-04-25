@@ -51,6 +51,7 @@ for i=1:nf
     ulg = phi1d'*ul; % and at gauss points on edge
 
     scale = (master.gw1d .* sqrt(xsg.*xsg + ysg.*ysg));
+    S = diag(scale);
 
     kr = mesh.f(i,4); % right element (tells if internal face or boundary)
     if (kr >= 0)
@@ -61,16 +62,16 @@ for i=1:nf
         ur = u(master.perm(:, eri, ero), :, kr);
         urg = phi1d'*ur;
 
-        lfinvi = app.finvi( urg, ulg, nepg, epg, app.arg, time);
-        rfinvi = app.finvi( ulg, urg, -nepg, epg, app.arg, time);
+        lfinvi = app.finvi( ulg, urg, nepg, epg, app.arg, time);
+        rfinvi = app.finvi( urg, ulg, -nepg, epg, app.arg, time);
 
-        r(master.perm(:, eli, elo), :, kl) = r(master.perm(:, eli, elo), :, kl) - (phi1d * (lfinvi .* scale));
-        r(master.perm(:, eri, ero), :, kr) = r(master.perm(:, eri, ero), :, kr) - (phi1d * (rfinvi .* scale));
+        r(master.perm(:, eli, elo), :, kl) = r(master.perm(:, eli, elo), :, kl) - (phi1d * S * lfinvi);
+        r(master.perm(:, eri, ero), :, kr) = r(master.perm(:, eri, ero), :, kr) - (phi1d * S * rfinvi);
     else
         % external face
         ibt = app.bcm(-kr);
         finvb = app.finvb( ulg, nepg, ibt, app.bcs(ibt, :), epg, app.arg, time);
-        r(master.perm(:, eli, elo), :, kl) = r(master.perm(:, eli, elo), :, kl) - (phi1d * (finvb .* scale));
+        r(master.perm(:, eli, elo), :, kl) = r(master.perm(:, eli, elo), :, kl) - (phi1d * S * finvb);
     end
 end
 
@@ -89,6 +90,7 @@ for i=1:nt
     xiy = diag(-xet(:,i) ./ detJ(:,i));
     etay = diag(xxi(:,i) ./ detJ(:,i));
     scale = (master.gwgh .* detJ(:,i));
+    S = diag(scale);
 
     % derivatives with respect to global coordinates
     dphidx = (dphidxi*xix + dphideta*etax);
@@ -98,7 +100,7 @@ for i=1:nt
     % mm = phi*diag(master.gwgh .* detJ(:, i))*phi';
 
     [fvx, fvy] = app.finvv(ug, pg, app.arg, time);
-    finvv = dphidx * (fvx .* scale) + dphidy * (fvy .* scale);
+    finvv = dphidx * S * fvx + dphidy * S * fvy;
     r(:,:,i) = r(:,:,i) + finvv;
     % r(:,:,i) = r(:,:,i) + (mm \ finvv);
 end

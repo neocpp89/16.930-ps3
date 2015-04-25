@@ -9,6 +9,7 @@ function [r, myr] = fullResidual(m, n, porder)
 
     vf = @(p) fliplr(p-0.5)*diag([-1,1]);   % Rotating field
     app.arg = {vf};
+    app.arg = { @(p) ones(size(p)) };
 
     init  = @(dg) exp(-120*((dg(:,1,:)-0.6).^2 + (dg(:,2,:)-0.5).^2));  % Gaussian hill
     u = initu(mesh,app,{init});
