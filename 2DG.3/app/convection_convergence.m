@@ -1,22 +1,23 @@
 %DRIVER FOR LINEAR CONVECTION PROBLEM                          
 %
+clear all; close all; clc;
 d0=fileparts([pwd,filesep]);
 addpath([d0,'/convection']);   % Add path to application subdirectory
 
-n = [4 6 8 12 16];
+x = [3 4 6 8 12];
 p = [2 3 4];
 
 figure;
 hold all;
-for pp=p
+for k=1:numel(p)
     err = [];
-    for x=n
-        m      = x;                    
-        n      = x;
-        porder = pp;
+    for j=1:numel(x)
+        m      = x(j);
+        n      = x(j);
+        porder = p(k);
 
         time  = 2*pi;
-        dt    = 1.e-02;
+        dt    = 1.e-03;
         nstep = 5;
         ncycl = ceil(time/(nstep*dt));
 
@@ -68,10 +69,11 @@ for pp=p
             errsq = errsq + sum(S * ug);
         end
         err = [err sqrt(errsq)];
-        disp(x);
+        disp(x(j));
     end
-    plot(1./n, err);
-    legend(sprintf('Order %d', pp));
+    disp(err);
+    loglog(1./x, err, 'DisplayName', sprintf('Order = %d', p(k)));
 end
+legend(gca,'show')
 hold off;
 
