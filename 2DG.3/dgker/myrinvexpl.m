@@ -26,13 +26,9 @@ phi(:,:) = master.shap(:,1,:);
 dphidxi(:,:) = master.shap(:,2,:);
 dphideta(:,:) = master.shap(:,3,:);
 
-npl = size(mesh.plocal, 1);
-nc = app.nc;
-
 % loop through all faces
 nf = size(mesh.f, 1);
 for i=1:nf
-    epl = mesh.f(i,1); % left point index 
     kl = mesh.f(i,3); % left element index
     eli = find(abs(mesh.t2f(kl,:)) == i); % left element edge index
     elo = 1 + (mesh.t2f(kl,eli) < 0); % orientation of edge on left element
@@ -43,9 +39,10 @@ for i=1:nf
     % tangent vector
     xsg = dphi1d'*ep(:,1);
     ysg = dphi1d'*ep(:,2);
+    dsg = sqrt(ysg.*ysg + xsg.*xsg);
 
     % outward normal
-    nepg = normr([ysg, -xsg]);
+    nepg = [ysg ./ dsg, -xsg ./ dsg];
 
     ul = u(master.perm(:, eli, elo), :, kl); % solution on left element's edge
     ulg = phi1d'*ul; % and at gauss points on edge
@@ -56,7 +53,6 @@ for i=1:nf
     kr = mesh.f(i,4); % right element (tells if internal face or boundary)
     if (kr >= 0)
         % internal face, get right element quantities
-        epr = mesh.f(i,2);
         eri = find(abs(mesh.t2f(kr,:)) == i);
         ero = 1 + (mesh.t2f(kr,eri) < 0);
         ur = u(master.perm(:, eri, ero), :, kr);
