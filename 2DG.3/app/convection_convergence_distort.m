@@ -9,8 +9,6 @@ p = [2 3 4];
 
 errs = zeros(numel(p), numel(x));
 
-figure;
-hold all;
 parfor k=1:numel(p)
     err = [];
     for j=1:numel(x)
@@ -24,7 +22,7 @@ parfor k=1:numel(p)
         ncycl = floor(time/(nstep*dt));
 
         mesh = mkmesh_square(m,n,porder,1);
-        % mesh = mkmesh_distort(mesh,0.05);     % Uncomment for mesh distortion 
+        mesh = mkmesh_distort(mesh,0.05);     % Uncomment for mesh distortion 
         master = mkmaster(mesh,2*porder);
         app = mkapp;
 
@@ -39,8 +37,7 @@ parfor k=1:numel(p)
         u0 = u;
 
         tm = 0.0;
-        for i=1:ncycl   
-            % scaplot(mesh,u,[-0.1,1.2],[],1); axis off; 
+        for i=1:ncycl
             u = rk4(@myrinvexpl,master,mesh,app,u,tm,dt,nstep);
             tm = tm + nstep*dt;
         end
@@ -49,7 +46,6 @@ parfor k=1:numel(p)
             u = rk4(@myrinvexpl,master,mesh,app,u,tm,dt,1);
             tm = tm + dt;
         end
-        % scaplot(mesh,u,[-0.1,1.2],[],1); axis off;
 
         xxi = squeeze(master.shap(:,2,:))'*squeeze(mesh.dgnodes(:,1,:));
         xet = squeeze(master.shap(:,3,:))'*squeeze(mesh.dgnodes(:,1,:));
@@ -74,10 +70,6 @@ parfor k=1:numel(p)
         disp(x(j));
     end
     errs(k, :) = err;
-    % disp(err);
-    % loglog(1./x, err, 'DisplayName', sprintf('Order = %d', p(k)));
 end
-legend(gca,'show');
-hold off;
 errs
 
