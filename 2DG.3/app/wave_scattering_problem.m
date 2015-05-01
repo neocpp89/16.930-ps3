@@ -18,10 +18,10 @@ meshes = cell(numel(pl), 1);
 solutions = cell(numel(pl), 1);
 incident = cell(numel(pl), 1);
 
-parfor k=1:numel(pl)
-    m      = ml(k);
-    n      = nl(k);
-    porder = pl(k);
+parfor j=1:numel(pl)
+    m      = ml(j);
+    n      = nl(j);
+    porder = pl(j);
 
     time  = 100;
     dt    = 0.6e-02;
@@ -43,7 +43,7 @@ parfor k=1:numel(pl)
     app.arg = {c,k,ub};
 
     u = initu(mesh,app,{0,0,0});
-    clear ue;
+    ue = zeros(size(mesh.dgnodes));
 
     tm = 0.0;
 
@@ -67,10 +67,10 @@ parfor k=1:numel(pl)
         u = rk4(@myrinvexpl,master,mesh,app,u,tm,dt,nstep);
         tm = tm + nstep*dt;
     end
-    disp(porder(k));
-    meshes{k} = m;
-    solutions{k} = u;
-    incident{k} = ue;
+    disp(porder(j));
+    meshes{j} = m;
+    solutions{j} = u;
+    incident{j} = ue;
 end
 save('wave_problem.mat');
 
