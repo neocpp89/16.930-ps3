@@ -12,10 +12,13 @@
 \maketitle
 
 \section{Convergence Study}
+We used meshes where $m = n = [3, 4, 6, 8, 12]$.
 We have plotted the results of the convergence study in \ref{fig:cc}.
 The rates are shown in table \ref{tbl:cc}.
 Despite using a small time step ($\Delta t = 0.001$), we didn't quite see the expected convergence rates.
+In order to calculate the rates, we used only the last three points in both cases.
 I suspect the temporal error is starting to limit the slope at larger grid sizes, as $p=2$ displays the correct behavior, but the slopes for $p = 3,4$ are a bit under what they should be.
+Although not shown, meshes at size $m = n = 16$ had essentially the same error as the $m = n = 12$ case for the fourth order elements at this time step size.
 Unfortunately, my residual evaluation code is quite slow and the largest cases already took more than an hour to run.
 Switching to the given implementation did not seem to help much either with the speed, and I ran out of patience after multiple attempts.
 
@@ -47,7 +50,24 @@ Please see the code located at \texttt{2DG.3/dgker/myrinvexpl.m} in the zip file
 
 \section{Wave Equation}
 From inspection, we see that if we have a grid with odd number of subdivisions n, the (n+1)/2 innermost concentric grid line goes through (e, 0).
+We select all nodes which are close to this grid line and plot the magnitude of the scattered field versus their respective angles.
+There are multiple values per choice of theta due to the fact that two DG elements meet at these points.
 
 \section{Euler Equations}
+
+\section{Euler Equations with Obstacle}
+The mach number and pressures are plotted for both the p=1 and p=3 cases in figure \ref{fig:channel-obs}.
+We see that the simulations look similar, although the mach number is lower on the downstream edge in the p=1 case.
+However, the p=3 case took less time to compute, despite having a similar number of DOFs (I'm not sure if this is due to my implementation or not though).
+
+\begin{figure}[!ht]
+\centering
+\begin{tabular}{c c}
+\includegraphics[scale=0.8]{channel_obs_1.pdf} &
+\includegraphics[scale=0.8]{channel_obs_3.pdf}
+\end{tabular}
+\caption{The Euler channel problem with two different meshes at p=1 and p=3. The number of DOFs are similar between the meshes.}
+\label{fig:channel-obs}
+\end{figure}
 
 \end{document}
