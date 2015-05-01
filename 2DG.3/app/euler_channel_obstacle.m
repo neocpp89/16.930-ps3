@@ -1,11 +1,11 @@
-%DRIVER FOR THE EULER EQUATIONS IN A CHANNEL 
+%DRIVER FOR THE EULER EQUATIONS IN A CHANNEL (WITH OBSTACLE)
 %
 d0=fileparts([pwd,filesep]);
 addpath([d0,'/Euler']);       % Add path to application subdirectory
 
 p = [1 3];
-xm = [0 15];
-xn = [0 8];
+xm = [0 21];
+xn = [0 12];
 
 xm(1) = ceil(sqrt(3)*xm(2));
 xn(1) = ceil(sqrt(3)*xn(2));
@@ -55,6 +55,7 @@ parfor j=1:numel(p)
         
         u = rk4(@myrinvexpl,master,mesh,app,u,tm,dt,nstep);
         tm = tm + nstep*dt;
+        fprintf('[%d] step = %d/%d\n', j, i, ncycl);
     end
     meshes{j} = mesh;
     solutions{j} = u;

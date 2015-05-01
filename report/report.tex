@@ -47,6 +47,7 @@ Order & Regular & Distorted \\
 
 \section{rinvexpl.m Implementation}
 Please see the code located at \texttt{2DG.3/dgker/myrinvexpl.m} in the zip file accompanying this report.
+I have also submitted it separately on Stellar.
 
 \section{Wave Equation}
 From inspection, we see that if we have a grid with odd number of subdivisions n, the (n+1)/2 innermost concentric grid line goes through (e, 0).
@@ -57,6 +58,7 @@ There are multiple values per choice of theta due to the fact that two DG elemen
 
 \section{Euler Equations with Obstacle}
 The mach number and pressures are plotted for both the p=1 and p=3 cases in figure \ref{fig:channel-obs}.
+The mesh for the p=1 case had 26x14 elements, while the p=3 case had 15x8 (this may be too low as indicated by the lack of boundary layer).
 We see that the simulations look similar, although the mach number is lower on the downstream edge in the p=1 case.
 However, the p=3 case took less time to compute, despite having a similar number of DOFs (I'm not sure if this is due to my implementation or not though).
 

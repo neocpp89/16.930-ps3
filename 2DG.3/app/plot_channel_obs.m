@@ -16,6 +16,7 @@ for i=1:numel(p)
     subplot(2,1,1);
     title(sprintf('Mach number at t=100 for order %d', p(i)));
     scaplot(meshes{i}, eulereval(solutions{i}, 'M', 1.4), [], [], 1)
+    caxis([0, 0.6]);
     subplot(2,1,2);
     title(sprintf('Pressure at t=100 for order %d', p(i)));
     scaplot(meshes{i}, eulereval(solutions{i}, 'p', 1.4), [], [], 1)
