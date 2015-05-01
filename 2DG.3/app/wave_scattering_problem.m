@@ -7,7 +7,7 @@ pl = [1 3];
 ml = [0 11];
 nl = [0 20];
 
-% control for same approximately same number of DOFs
+% control for approximately same number of DOFs
 ml(1) = ceil(sqrt(3)*ml(2));
 if (mod(ml(1), 2) == 0)
     ml(1) = ml(1) + 1;
@@ -66,9 +66,9 @@ parfor j=1:numel(pl)
 
         u = rk4(@myrinvexpl,master,mesh,app,u,tm,dt,nstep);
         tm = tm + nstep*dt;
+        fprintf('[%d] step = %d/%d\n', j, i, ncycl);
     end
-    disp(porder(j));
-    meshes{j} = m;
+    meshes{j} = mesh;
     solutions{j} = u;
     incident{j} = ue;
 end
