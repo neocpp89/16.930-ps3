@@ -1,4 +1,4 @@
-%DRIVER FOR THE WAVE SCATTERING PROBLEM                          
+%DRIVER FOR THE WAVE SCATTERING PROBLEM (VARIOUS ORDERS)                          
 %
 d0=fileparts([pwd,filesep]);
 addpath([d0,'/wave']);     % Add path to application subdirectory

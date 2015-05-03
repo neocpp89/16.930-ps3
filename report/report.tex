@@ -52,9 +52,29 @@ I have also submitted it separately on Stellar.
 \section{Wave Equation}
 From inspection, we see that if we have a grid with odd number of subdivisions n, the (n+1)/2 innermost concentric grid line goes through (e, 0).
 We select all nodes which are close to this grid line and plot the magnitude of the scattered field versus their respective angles.
-There are multiple values per choice of theta due to the fact that two DG elements meet at these points.
+There are multiple values per choice of theta due to the fact that two or more DG elements meet at these points.
+
+The meshes were given by 11 points in r and 20 points in theta (for p=3) and 21 points in r and 35 points in theta (for p=1).
+This yields a similar number of DOFs.
+Despite the similar number of DOFs, the simulation of the p=3 case took much less time.
+
+I'm not sure if there is an error in my residual evaluation or something else, but the scattered field does not look very good (shown in figure \ref{fig:wave}).
+The features are almost as I expect, but they are much noiser than I thought they would be.
+The higher order elements seem to be doing a better job, but share the same type of problem.
+I have reduced the time step size to see if this is due to the explicit integration, but the simulations are still running.
+
+\begin{figure}[!ht]
+\centering
+\begin{tabular}{c c}
+\includegraphics[scale=0.8]{wave_1.pdf} &
+\includegraphics[scale=0.8]{wave_3.pdf}
+\end{tabular}
+\caption{The scattering of waves around a cylinder. The results are much noiser than I expected, but I am not sure what the reason for this is.}
+\label{fig:wave}
+\end{figure}
 
 \section{Euler Equations}
+I have not run these simulations yet; this will be updated if they can be completed in a reasonable time.
 
 \section{Euler Equations with Obstacle}
 The mach number and pressures are plotted for both the p=1 and p=3 cases in figure \ref{fig:channel-obs}.
