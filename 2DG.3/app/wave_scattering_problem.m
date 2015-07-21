@@ -1,11 +1,12 @@
 %DRIVER FOR THE WAVE SCATTERING PROBLEM (VARIOUS ORDERS)                          
 %
+clear all; close all; clc;
 d0=fileparts([pwd,filesep]);
 addpath([d0,'/wave']);     % Add path to application subdirectory
 
-pl = [1 3];
-ml = [0 11];
-nl = [0 20];
+pl = [1 3 5 6];
+ml = [0 11 11 7];
+nl = [0 20 20 12];
 
 % control for approximately same number of DOFs
 ml(1) = ceil(sqrt(3)*ml(2));
@@ -19,12 +20,13 @@ solutions = cell(numel(pl), 1);
 incident = cell(numel(pl), 1);
 
 parfor j=1:numel(pl)
+    figure;
     m      = ml(j);
     n      = nl(j);
     porder = pl(j);
 
     time  = 100;
-    dt    = 0.6e-02;
+    dt    = 2e-03;
     nstep = 10;
     ncycl = ceil(time/(nstep*dt));
     c = 1;
@@ -59,10 +61,12 @@ parfor j=1:numel(pl)
             u = ue;
         end
         
-        % subplot(2,1,1), scaplot(mesh,u(:,3,:)-ue(:,3,:),[-1.2,1.2],[],1); axis off;
-        % subplot(2,1,2), scaplot(mesh,u(:,3,:),[-1.2,1.2],[],1); axis off;  
-        % time=sprintf('t* = %.3f',nstep*dt*i);
-        % title(time,'Color','white','FontSize',16,'FontName','Courier')
+        subplot(2,1,1), scaplot(mesh,u(:,3,:)-ue(:,3,:),[-1.2,1.2],[],1); axis off;
+        subplot(2,1,2), scaplot(mesh,u(:,3,:),[-1.2,1.2],[],1); axis off;  
+        time=sprintf('t* = %.3f',nstep*dt*i);
+        title(time,'Color','black','FontSize',16,'FontName','Courier')
+        % drawnow;
+        saveas(gcf, sprintf('wave%d_%d', porder, i), 'png')
 
         u = rk4(@myrinvexpl,master,mesh,app,u,tm,dt,nstep);
         tm = tm + nstep*dt;
